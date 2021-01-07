@@ -1,0 +1,32 @@
+version: '3.7'
+
+services: 
+  hk-app-server:
+    build: ./ 
+    image: app-server:latest
+    hostname: hk-app-server
+    container_name : hk-app-server
+    restart: always
+    volumes:
+      - ./app-server:/src
+      - /src/node_modules
+    ports:
+      - "3000:3000"
+    depends_on: 
+      - db
+    environment:
+      - MONGO_URI=mongodb://db/hackernews
+      - BASE_URL=http://loclhost:3000
+
+  db:
+    image: mongo:4.0.0
+    restart: always
+    volumes:
+      - ./db_data:/data/db
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: echo 'db.stats().ok' | mongo localhost:27017/hackernews --quiet
+      interval: 5s
+      timeout: 5s
+      retries: 12
